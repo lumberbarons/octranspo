@@ -1,5 +1,9 @@
 # Simple wrapper for OC Transpo API
 
+## About
+
+This is an extremely simple wrapper for OC Transpo's API. Supports v1.2 of the API.
+
 ## Usage
 ```javascript
 // Require the module
