@@ -5,6 +5,14 @@ var routeSummary = '/GetRouteSummaryForStop';
 var nextTrips = '/GetNextTripsForStop';
 var nextTripsAllRoutes = '/GetNextTripsForStopAllRoutes';
 
+var routeSummaryResult = 'GetRouteSummaryForStopResult';
+var nextTripsResult = 'GetNextTripsForStopResult';
+var nextTripsAllRoutesResult = 'GetRouteSummaryForStopResult';
+
+var errorBadStop = '10';
+var errorBadRoute = '11';
+var errorStopNotOnRoute = '12';
+
 var request = require('request');
 
 var Octranspo = module.exports = function(options) {
@@ -19,7 +27,7 @@ Octranspo.prototype.getRouteSummaryForStop = function(stopNo, callback) {
         format: 'json'
     };
     
-    getData(routeSummary, data, callback);
+    getData(routeSummary, routeSummaryResult, data, callback);
 }
 
 Octranspo.prototype.getNextTripsForStop = function(routeNo, stopNo, callback) {
@@ -31,7 +39,7 @@ Octranspo.prototype.getNextTripsForStop = function(routeNo, stopNo, callback) {
         format: 'json'
     };
     
-    getData(nextTrips, data, callback);
+    getData(nextTrips, nextTripsResult, data, callback);
 }
 
 Octranspo.prototype.getNextTripsForStopAllRoutes = function(stopNo, callback) {
@@ -42,19 +50,39 @@ Octranspo.prototype.getNextTripsForStopAllRoutes = function(stopNo, callback) {
         format: 'json'
     };
     
-    getData(nextTripsAllRoutes, data, callback);
+    getData(nextTripsAllRoutes, nextTripsAllRoutesResult, data, callback);
 }
 
-function getData(resource, data, callback) {
-    request.post(buildUrl(resource), function(err, response, body) {
-        if(err) {
-            callback(err);
+function getData(resource, resultName, data, callback) {
+    request.post(buildUrl(resource), function(error, response, body) {
+        if(error) {
+            callback(error);
         } else {
-            callback(err, JSON.parse(body));
+            try {
+                var result = JSON.parse(body)[resultName];
+                if(result.Error) {
+                    callback(getErrorMsg(result.Error));
+                } else {
+                    callback(error, result);
+                }
+            } catch(e) {
+                callback("Failed to parse response", body);
+            }
         }
     }).form(data);
 }
 
+function getErrorMsg(code) {
+    if(code === errorBadStop) {
+        return 'Invalid stop number';
+    } else if(code === errorBadRoute) {
+        return 'Invalid route number';
+    } else if(code === errorStopNotOnRoute) {
+        return 'Stop does not service route';
+    }
+    return 'Unknown Error (' + code + ')';
+}
+    
 function buildUrl(resource) {
     return octranspoUrl + apiVer + resource;
 }
