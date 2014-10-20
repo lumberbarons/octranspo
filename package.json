@@ -13,7 +13,7 @@
     "engines": {
       "node": ">=0.10"
     },
-    "main": "octranspo.js",
+    "main": "lib/index.js",
     "dependencies": {
         "request": ">= 2.44.0"
     },
